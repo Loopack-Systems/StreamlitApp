@@ -8,9 +8,6 @@ import numpy as np
 # Path to CSV file
 CSV_FILE = 'scanned_codes.csv'
 
-image = st.camera_input("Show QR code")
-
-
 
 # Create CSV file if it doesn't exist
 if not os.path.exists(CSV_FILE):
@@ -68,6 +65,9 @@ def main():
     st.title("QR Code Registration")
 
     if st.button("Scan QR Code"):
+        image = st.camera_input("Show QR code")
+        x = True
+        st.write(data)
         if image is not None:
             bytes_data = image.getvalue()
             cv2_img = cv2.imdecode(np.frombuffer(bytes_data, np.uint8), cv2.IMREAD_COLOR)
@@ -76,7 +76,6 @@ def main():
 
             data, bbox, straight_qrcode = detector.detectAndDecode(cv2_img)
 
-            st.write("Here!")
             st.write(data)
 
 if __name__ == "__main__":
