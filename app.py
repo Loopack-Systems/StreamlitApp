@@ -1,13 +1,10 @@
 import streamlit as st
 import pandas as pd
-import cv2
 import datetime
 import os
-import numpy as np
 
 # Path to CSV file
-CSV_FILE = 'scanned_codes.csv'
-
+CSV_FILE = 'codes.csv'
 
 # Create CSV file if it doesn't exist
 if not os.path.exists(CSV_FILE):
@@ -27,56 +24,32 @@ def save_code(code):
     df = df.append({'code': code, 'timestamp': timestamp}, ignore_index=True)
     df.to_csv(CSV_FILE, index=False)
 
-def scan_qr_code():
-    """Function to scan QR code using webcam."""
-    cap = cv2.VideoCapture(0)
-    qr_detector = cv2.QRCodeDetector()
-
-    while True:
-        ret, frame = cap.read()
-        if not ret:
-            st.write("Error: Could not read from webcam.")
-            break
-        
-        # Detect QR code
-        data, bbox, _ = qr_detector(frame)
-
-        # Draw the bounding box around the detected QR code
-        if bbox is not None:
-            for i in range(len(bbox)):
-                cv2.line(frame, tuple(bbox[i][0]), tuple(bbox[(i+1) % 4][0]), (0, 255, 0), 3)
-        
-        # Display the image in the Streamlit app
-        st.image(frame, channels='BGR', use_column_width=True)
-        
-        if data:
-            cap.release()
-            cv2.destroyAllWindows()
-            return data
-
-        if st.button("Stop Scanning"):
-            break
-
-    cap.release()
-    cv2.destroyAllWindows()
-    return None
-
 def main():
-    st.title("QR Code Registration")
+    st.title("Code Registration")
 
-    if st.button("Scan QR Code"):
-        image = st.camera_input("Show QR code")
-        x = True
-        st.write(data)
-        if image is not None:
-            bytes_data = image.getvalue()
-            cv2_img = cv2.imdecode(np.frombuffer(bytes_data, np.uint8), cv2.IMREAD_COLOR)
+    # Text input for the user code
+    user_input = st.text_input("Enter your code:", "")
+    
+    if st.button("Submit"):
+        if user_input:
+            # Convert input to uppercase
+            code = user_input.upper()
+            
+            # Add "LPU" prefix if not present
+            if not code.startswith("LPU"):
+                code = "LPU" + code
+            
+            exists, timestamp = check_code(code)
+            if exists:
+                st.write(f"❌ The code '{code}' was already registered at {timestamp}.")
+            else:
+                save_code(code)
+                st.write(f"✅ New code registered: '{code}' at {datetime.datetime.now().strftime('%Y-%m-%d %H:%M:%S')}.")
 
-            detector = cv2.QRCodeDetector()
-
-            data, bbox, straight_qrcode = detector.detectAndDecode(cv2_img)
-
-            st.write(data)
+    # Display the contents of the CSV file
+    st.subheader("Registered Codes")
+    df = pd.read_csv(CSV_FILE)
+    st.dataframe(df)
 
 if __name__ == "__main__":
     main()
