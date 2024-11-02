@@ -26,14 +26,14 @@ def check_code(code, file_path):
 def save_code(code, file_path):
     timestamp = datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")
     df = pd.read_csv(file_path)
-    df = df.append({'code': code, 'timestamp': timestamp}, ignore_index=True)
+    df = pd.concat([df, pd.DataFrame([{'code': code, 'timestamp': timestamp}])], ignore_index=True)
     df.to_csv(file_path, index=False)
 
 def save_cups_data(code, number_of_cups):
     timestamp = datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")
     df = pd.read_csv(CUPS_CSV_FILE)
     df = pd.DataFrame(df)
-    df = df.append({'code': code, 'number_of_cups': number_of_cups, 'timestamp': timestamp}, ignore_index=True)
+    df = pd.concat([df, pd.DataFrame([{'code': code, 'number_of_cups': number_of_cups, 'timestamp': timestamp}])], ignore_index=True)
     df.to_csv(CUPS_CSV_FILE, index=False)
 
 def main():
